@@ -1,0 +1,87 @@
+#include "gomoku.hpp"
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/screen.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+
+using namespace ftxui;
+
+int main() {
+    auto screen = ScreenInteractive::Fullscreen();
+    Gomoku game;
+
+    int cursor_x = 7;
+    int cursor_y = 7;
+    const int BOARD_SIZE = 15;
+
+    auto ui = Renderer([&] {
+        Elements grid;
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            Elements row;
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                Player c = game.get_cell(x, y);
+                Element cell;
+
+                // 完全不用文字，只用背景块区分棋子
+                if (c == PLAYER1) {
+                    // 红方：红色背景块
+                    cell = text("   ") | bgcolor(Color::Red) | borderLight;
+                } else if (c == PLAYER2) {
+                    // 蓝方：蓝色背景块
+                    cell = text("   ") | bgcolor(Color::Blue) | borderLight;
+                } else {
+                    // 空位：黑色背景块
+                    cell = text("   ") | bgcolor(Color::Black) | borderLight;
+                }
+
+                // 光标高亮：反色
+                if (x == cursor_x && y == cursor_y) {
+                    cell = cell | inverted;
+                }
+
+                row.push_back(cell);
+            }
+            grid.push_back(hbox(std::move(row)));
+        }
+
+        std::string status;
+        if (game.get_winner() == PLAYER1)
+            status = "红方胜利！按 R 重开";
+        else if (game.get_winner() == PLAYER2)
+            status = "蓝方胜利！按 R 重开";
+        else if (game.is_board_full())
+            status = "平局！按 R 重开";
+        else
+            status = (game.get_current_player() == PLAYER1) ? "红方回合" : "蓝方回合";
+
+        return vbox({
+            text(" FTXUI 五子棋 (方向键移动 空格落子 R 重置) ") | bold | center,
+            text(status) | bold | center,
+            vbox(std::move(grid)) | center | borderDouble
+        }) | bgcolor(Color::Black);
+    });
+
+    auto component = CatchEvent(ui, [&](Event e) {
+        if (e.character() == "r" || e.character() == "R") {
+            game.reset();
+            cursor_x = 7;
+            cursor_y = 7;
+            return true;
+        }
+
+        if (e == Event::ArrowLeft && cursor_x > 0) cursor_x--;
+        if (e == Event::ArrowRight && cursor_x < BOARD_SIZE - 1) cursor_x++;
+        if (e == Event::ArrowUp && cursor_y > 0) cursor_y--;
+        if (e == Event::ArrowDown && cursor_y < BOARD_SIZE - 1) cursor_y++;
+
+        if (e == Event::Character(' ') || e == Event::Return) {
+            game.place(cursor_x, cursor_y);
+            return true;
+        }
+
+        return false;
+    });
+
+    screen.Loop(component);
+    return 0;
+}
