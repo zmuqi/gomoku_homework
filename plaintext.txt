@@ -1,9 +1,0 @@
-gomoku/
-├── include/
-│   └── gomoku.hpp
-├── src/
-│   ├── gomoku.cpp
-│   └── main.cpp
-├── CMakeLists.txt
-├── README.md
-├── tasks.json
