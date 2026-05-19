@@ -14,6 +14,10 @@
 按 R 键重新开始游戏  
 全屏彩色界面  
 
+## 实机画面
+<img width="2559" height="1523" alt="屏幕截图 2026-05-20 001835" src="https://github.com/user-attachments/assets/43f0c93d-0f5b-497e-ba59-dab65ddc6b14" />
+
+
 ## 技术栈
 - 语言：C++17
 - 界面库：FTXUI（终端UI库）
